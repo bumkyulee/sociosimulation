@@ -14,16 +14,18 @@ class Economy:
 		self.lastTick = lastTick
 
 		# 2. 경제가 가질 Agent 모음
+		self.people_employed = list()
 		self.people_unemployed = list()
 		self.companies = list()
 		self.companies_bankrupted = list()
+
 
 		# 3. 그래프 변수들 (주차, 소비총합, 고용률, 운영률)
 		self.week = 0
 		self.weeks = list()
 		self.totalConsumes = list()
-		self.employmentRates = list()
-		self.openingRates = list()
+		self.employmentCount = list()
+		self.openingCount = list()
 		self.minWages = list()
 
 	def run(self):
@@ -59,19 +61,21 @@ class Economy:
 		# 0. 시간이 간다 & 최저임금이 오른다.
 		self.week += 1
 		self.setMinWage()
+		weeklyWage = self.getWeeklyWage()
 
 		# 1. 회사는 임금을 지불한다(행동주체) = 사람은 돈을 번다
-		weeklyWage = self.getWeeklyWage()
 		for company in self.companies:
+			company.initProfit()
 			company.pay(weeklyWage)
 
 		# 2. 사람은 물건을 산다(행동주체) = 회사는 돈을 번다
 		# 1) 사람은 산업에 돈을 쓰고,
-		self.industryAccount = dict.fromkeys(self.industryAccount.iterkeys(),0)
-		people_employed = list()
+		self.people_employed = list()
 		for company in self.companies:
-			people_employed += company.employees
-		for person in self.people_unemployed+people_employed:
+			self.people_employed += company.employees
+
+		self.industryAccount = dict.fromkeys(self.industryAccount.iterkeys(),0)
+		for person in self.people_employed:
 			personConsume = person.buy()
 			self.industryAccount = { k: self.industryAccount.get(k, 0) + personConsume.get(k, 0) for k in set(self.industryAccount) | set(personConsume) }
 
@@ -101,7 +105,7 @@ class Economy:
 					if len(company.employees) > 0:
 						p = company.fire()
 						self.people_unemployed.append(p)
-					else:
+					if len(company.employees) == 0:
 						self.companies.remove(company)
 						self.companies_bankrupted.append(company)
 						break
@@ -126,19 +130,24 @@ class Economy:
 		# 2) 소비총합 기록
 		self.totalConsumes.append(sum(self.industryAccount.values()))
 		# 3) 고용률 기록
-		people_employed = list()
-		for company in self.companies:
-			people_employed += company.employees
-		self.employmentRates.append("%0.5f" % (len(people_employed)/(len(people_employed+self.people_unemployed))))
+		self.employmentCount.append(len(self.people_employed))
 		# 4) 운영률 기록
-		self.openingRates.append("%0.5f" % (len(self.companies)/(len(self.companies+self.companies_bankrupted))))
+		self.openingCount.append(len(self.companies))
 
 	# print
 	def doPrint(self):
 		print '[     '+ str(self.week) + ' th week'+'       ]'
 		print 'Running Companies--'
+		indus = ''
+		emplo = 0
 		for company in self.companies:
-			print company.industry + ' : ' + str(len(company.employees)) + ' / ' + str(company.profit)
+			if indus != company.industry or emplo != len(company.employees):
+				print company.industry + ' : ' + str(len(company.employees)) + ' / ' + str(company.profit)
+			indus = company.industry
+			emplo = len(company.employees)
 		print 'Bankrupted Companies--'
 		for company in self.companies_bankrupted:
-			print company.industry + ' : ' + str(len(company.employees)) + ' / ' + str(company.profit)
+			if indus != company.industry or emplo != len(company.employees):
+				print company.industry + ' : ' + str(len(company.employees)) + ' / ' + str(company.profit)
+			indus = company.industry
+			emplo = len(company.employees)

@@ -25,3 +25,6 @@ class Company:
 		for person in self.employees:
 			person.earn(wage)
 		self.profit -= wage*len(self.employees)
+
+	def initProfit(self):
+		self.profit = 0
