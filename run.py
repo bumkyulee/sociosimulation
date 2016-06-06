@@ -33,14 +33,14 @@ def runEconomy(minWageTarget, duration, tickLimit, loop):
 #with plt.style.context('fivethirtyeight'):
 '''
 plt.subplot(221)
-runEconomy(10000,26,52*3,1)
+runEconomy(10000,52,50,1)
 plt.subplot(222)
-runEconomy(10000,52,52*3,1)
+runEconomy(10000,52*2,50,1)
 plt.subplot(223)
-runEconomy(10000,78,52*3,1)
+runEconomy(10000,52*3,50,1)
 plt.subplot(224)
 '''
-runEconomy(6000,52,52*2,1)
+runEconomy(10000,25,100,1)
 plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),fancybox=True, shadow=True, ncol=5)
 
 plt.show()
