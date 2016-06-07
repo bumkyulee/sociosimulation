@@ -2,6 +2,7 @@
 from __future__ import division
 from Person import *
 from Company import *
+import numpy as np
 import random
 
 class Economy:
@@ -79,6 +80,36 @@ class Economy:
 			personConsume = person.buy()
 			self.industryAccount = { k: self.industryAccount.get(k, 0) + personConsume.get(k, 0) for k in set(self.industryAccount) | set(personConsume) }
 
+
+		# 2) 회사는 산업에 모인 돈을 고용인 수 순서대로, 파레토 비율대로 나눠갖는다.
+		# 2-1) 산업별로 회사, 인원수를 정리한다.
+		industryInfo = dict()
+		for company in self.companies:
+			if company.industry in industryInfo:
+				industryInfo[company.industry]['employees'].append(len(company.employees))
+				industryInfo[company.industry]['companies'].append(company)
+			else:
+				industryInfo[company.industry] = {'employees':[len(company.employees)],'companies':[company]}
+
+		# 2-2) 산업별로 처리한다.
+		for industry, info in industryInfo.items():
+			# 2-3) 파레토 인원수 / 총 인원수를 정리한다.
+			info['employees'].sort(reverse=True)
+			paretoEmployeesPoint = int(len(info['employees'])/5)
+			paretoEmployees = info['employees'][paretoEmployeesPoint]
+			paretoEmployeesAbove = sum(info['employees'][:paretoEmployeesPoint])
+			paretoEmployeesBelow = sum(info['employees'][paretoEmployeesPoint:])
+
+			# 2-4) 기업이 파레토 Above / Below 중 어디있는지 판별하고 돈을 준다.
+			paretoProfitAbove = self.industryAccount[industry]*0.8
+			paretoProfitBelow = self.industryAccount[industry]*0.2
+			for company in info['companies']:
+				if len(company.employees) > paretoEmployees:
+					profit = paretoProfitAbove*len(company.employees)/paretoEmployeesAbove
+				else:
+					profit = paretoProfitBelow*len(company.employees)/paretoEmployeesBelow
+				company.earn(profit)
+		'''
 		# 2) 회사는 산업에 모인 돈을 고용인 수 비율로 나눠갖는다.
 		industryEmployeeCount = dict()
 		for company in self.companies:
@@ -91,7 +122,7 @@ class Economy:
 			if industryEmployeeCount[company.industry] > 0:
 				profit = self.industryAccount[company.industry]*len(company.employees)/industryEmployeeCount[company.industry]
 				company.earn(profit)
-
+		'''
 		# 3. 회사는 사람을 자르거나 더 고용한다.
 		for company in self.companies:
 			num = company.hrNum(weeklyWage)
@@ -112,7 +143,8 @@ class Economy:
 
 	# setMinWage
 	def setMinWage(self):
-		if self.duration > self.week:
+		raisePeriod = 4
+		if self.duration > self.week and self.week % raisePeriod == 0:
 			wage = (self.minWageTarget-minWageBegin)/self.duration*self.week+minWageBegin
 			self.minWage = int(wage)
 

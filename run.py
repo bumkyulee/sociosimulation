@@ -40,7 +40,7 @@ plt.subplot(223)
 runEconomy(10000,52*3,50,1)
 plt.subplot(224)
 '''
-runEconomy(10000,25,100,1)
+runEconomy(10000,104,104,1)
 plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),fancybox=True, shadow=True, ncol=5)
 
 plt.show()
