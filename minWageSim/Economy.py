@@ -20,7 +20,6 @@ class Economy:
 		self.companies = list()
 		self.companies_bankrupted = list()
 
-
 		# 3. 그래프 변수들 (주차, 소비총합, 고용률, 운영률)
 		self.week = 0
 		self.weeks = list()
@@ -66,7 +65,7 @@ class Economy:
 
 		# 1. 회사는 임금을 지불한다(행동주체) = 사람은 돈을 번다
 		for company in self.companies:
-			company.initProfit()
+			#company.initProfit()
 			company.pay(weeklyWage)
 
 		# 2. 사람은 물건을 산다(행동주체) = 회사는 돈을 번다
@@ -85,11 +84,12 @@ class Economy:
 		# 2-1) 산업별로 회사, 인원수를 정리한다.
 		industryInfo = dict()
 		for company in self.companies:
-			if company.industry in industryInfo:
-				industryInfo[company.industry]['employees'].append(len(company.employees))
-				industryInfo[company.industry]['companies'].append(company)
-			else:
-				industryInfo[company.industry] = {'employees':[len(company.employees)],'companies':[company]}
+			if len(company.employees) > 0:
+				if company.industry in industryInfo:
+						industryInfo[company.industry]['employees'].append(len(company.employees))
+						industryInfo[company.industry]['companies'].append(company)
+				else:
+					industryInfo[company.industry] = {'employees':[len(company.employees)],'companies':[company]}
 
 		# 2-2) 산업별로 처리한다.
 		for industry, info in industryInfo.items():
@@ -123,27 +123,31 @@ class Economy:
 				profit = self.industryAccount[company.industry]*len(company.employees)/industryEmployeeCount[company.industry]
 				company.earn(profit)
 		'''
+
 		# 3. 회사는 사람을 자르거나 더 고용한다.
-		for company in self.companies:
-			num = company.hrNum(weeklyWage)
-			if num > 0:
-				for i in range(0,num):
-					if len(self.people_unemployed) > 0:
-						p = self.people_unemployed.pop(0)
-						company.hire(p)
-			elif num < 0:
-				for i in range(0,-num):
-					if len(company.employees) > 0:
-						p = company.fire()
-						self.people_unemployed.append(p)
-					if len(company.employees) == 0:
-						self.companies.remove(company)
-						self.companies_bankrupted.append(company)
-						break
+		if self.week % 4 == 0:
+			for company in self.companies:
+				num = company.hrNum(weeklyWage)
+				if num > 0:
+					for i in range(0,num):
+						if len(self.people_unemployed) > 0:
+							p = self.people_unemployed.pop(0)
+							company.hire(p)
+				elif num < 0:
+					for i in range(0,-num):
+						if len(company.employees) > 0:
+							p = company.fire()
+							self.people_unemployed.append(p)
+						if len(company.employees) == 1:
+							p = company.fire()
+							self.people_unemployed.append(p)
+							self.companies.remove(company)
+							self.companies_bankrupted.append(company)
+							break
 
 	# setMinWage
 	def setMinWage(self):
-		raisePeriod = 4
+		raisePeriod = 1
 		if self.duration > self.week and self.week % raisePeriod == 0:
 			wage = (self.minWageTarget-minWageBegin)/self.duration*self.week+minWageBegin
 			self.minWage = int(wage)

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import random
 
 class Company:
 	def __init__(self,industry):
@@ -7,7 +8,10 @@ class Company:
 		self.employees = list()
 
 	def hrNum(self,wage):
-		return int(self.profit / wage)
+		if self.profit < 0:
+			return int(self.profit / wage)
+		else:
+			return int(self.profit / wage)
 
 	def hire(self,person):
 		self.employees.append(person)
