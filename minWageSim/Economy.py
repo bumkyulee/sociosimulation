@@ -147,7 +147,7 @@ class Economy:
 
 	# setMinWage
 	def setMinWage(self):
-		raisePeriod = 1
+		raisePeriod = 26
 		if self.duration > self.week and self.week % raisePeriod == 0:
 			wage = (self.minWageTarget-minWageBegin)/self.duration*self.week+minWageBegin
 			self.minWage = int(wage)
@@ -160,7 +160,7 @@ class Economy:
 	# graph - output 기록 - [필수] Tick 끝에서 실행된다
 	def setOutputMeasures(self):
 		# 0) 최저임금 기록
-		self.minWages.append(self.minWage)
+		self.minWages.append(self.minWage+baseWage)
 		# 1) week 기록
 		self.weeks.append(self.week)
 		# 2) 소비총합 기록

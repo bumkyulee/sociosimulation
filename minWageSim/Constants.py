@@ -33,4 +33,5 @@ for row in range(1,20):
 	companyEmployeeCount[sheetEmployment.row_values(row)[0]] = employmentRange
 
 # 최저임금 시작
-minWageBegin = 6000
+minWageBegin = 0
+baseWage = 6000

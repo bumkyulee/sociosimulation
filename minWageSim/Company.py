@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import random
+from Constants import *
 
 class Company:
 	def __init__(self,industry):
@@ -9,9 +10,9 @@ class Company:
 
 	def hrNum(self,wage):
 		if self.profit < 0:
-			return int(self.profit / wage)
+			return int(self.profit / (baseWage+wage))
 		else:
-			return int(self.profit / wage)
+			return int(self.profit / (baseWage+wage))
 
 	def hire(self,person):
 		self.employees.append(person)
