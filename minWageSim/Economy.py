@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
+from Constants import *
 from Person import *
 from Company import *
 import numpy as np
@@ -27,6 +28,7 @@ class Economy:
 		self.employmentCount = list()
 		self.openingCount = list()
 		self.minWages = list()
+		self.emergencyRate = dict()
 
 	def run(self):
 		# 1. 시뮬레이션 시작
@@ -74,9 +76,11 @@ class Economy:
 			self.people_employed += company.employees
 
 		self.industryAccount = dict.fromkeys(self.industryAccount.iterkeys(),0)
+		self.emergencyNormalize()
 		for person in self.people_employed:
-			personConsume = person.buy()
+			personConsume = person.buy(self.emergencyRate)
 			self.industryAccount = { k: self.industryAccount.get(k, 0) + personConsume.get(k, 0) for k in set(self.industryAccount) | set(personConsume) }
+		self.emergencyRateInit()
 
 		'''
 		# 2) 회사는 산업에 모인 돈을 고용인 수 순서대로, 파레토 비율대로 나눠갖는다.
@@ -122,7 +126,7 @@ class Economy:
 				profit = self.industryAccount[company.industry]*len(company.employees)/industryEmployeeCount[company.industry]
 				company.earn(profit)
 		'''
-		# 3) 회사는 산업에 모인 돈을 고용인 수 비율에 랜덤을 더해 나눠갖는다.
+		# 3) 회사는 산업에 모인 돈을 고용인 수 비율에 파레토 랜덤/미라클을 더해 나눠갖는다.
 		industryInfo = dict()
 		for company in self.companies:
 			if len(company.employees) > 0:
@@ -131,7 +135,7 @@ class Economy:
 				industryInfo[company.industry][company] = len(company.employees)
 
 		for companies in industryInfo.values():
-			paretoPortion = 0.001
+			paretoPortion = 0.01
 			paretoMiracle = 0.3
 			paretoValues = sorted(list(np.random.pareto(1,len(companies))),reverse=True if paretoMiracle < random.random() else False)
 			paretoValues = [float(x)/sum(paretoValues) for x in paretoValues]
@@ -156,12 +160,10 @@ class Economy:
 				elif num < 0:
 					for i in range(0,-num):
 						if len(company.employees) > 0:
-							p = company.fire()
-							self.people_unemployed.append(p)
+							self.fireOne(company)
 						if len(company.employees) <= bankruptNum:
 							for _ in range(len(company.employees)):
-								p = company.fire()
-								self.people_unemployed.append(p)
+								self.fireOne(company)
 							self.companies.remove(company)
 							self.companies_bankrupted.append(company)
 							break
@@ -208,3 +210,29 @@ class Economy:
 				print company.industry + ' : ' + str(len(company.employees)) + ' / ' + str(company.profit)
 			indus = company.industry
 			emplo = len(company.employees)
+
+	# print dict
+	def doPrintDict(self,d):
+		for key, value in d.items():
+			print key + ' : ' + str(value)
+
+	# emergencyRate = 0으로 바꾼다.
+	def emergencyRateInit(self):
+		self.emergencyRate = dict.fromkeys(self.emergencyRate, 0)
+
+	# emergencyRate를 노말라이즈한다.
+	def emergencyNormalize(self):
+		totalFireNum = sum(self.emergencyRate.values())
+		if totalFireNum == 0: return
+		for key, value in self.emergencyRate.items():
+			self.emergencyRate[key] = float(value) / totalFireNum
+
+	# 해고 룰
+	def fireOne(self,company):
+		p = company.fire()
+		self.people_unemployed.append(p)
+		if company.industry in self.emergencyRate:
+			self.emergencyRate[company.industry] += 1
+		else:
+			self.emergencyRate[company.industry] = 1
+
