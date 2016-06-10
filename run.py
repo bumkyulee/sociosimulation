@@ -33,6 +33,8 @@ def runEconomy(minWageTarget, duration, tickLimit, loop):
 	ax4.set_ylim(0)
 
 	fig.suptitle('Go '+ str(minWageTarget) + 'KRW in ' + str(duration) + 'weeks', fontsize=13, fontweight='bold')
+	print e.employmentCount[50:]
+	print e.openingCount[50:]
 	plt.show()
 
-runEconomy(1000,104,104,1)
+runEconomy(6000,52,300,1)

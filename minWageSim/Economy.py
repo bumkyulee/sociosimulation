@@ -54,6 +54,7 @@ class Economy:
 					for j in range(0,employmentCount):
 						p = self.people_unemployed.pop(0)
 						c.hire(p)
+						#c.earn(self.getWeeklyWage()*4)
 					self.companies.append(c)
 
 	# tick 한번
@@ -74,12 +75,15 @@ class Economy:
 		for company in self.companies:
 			self.people_employed += company.employees
 
+		# 1-1) 실직자도 최저임금의 반 만큼 쓴다.
+		for person in self.people_unemployed:
+			person.earn(self.getWeeklyWage()/2)
+
 		self.industryAccount = dict.fromkeys(self.industryAccount.iterkeys(),0)
-		for person in self.people_employed:
+		for person in self.people_employed+self.people_unemployed:
 			personConsume = person.buy()
 			self.industryAccount = { k: self.industryAccount.get(k, 0) + personConsume.get(k, 0) for k in set(self.industryAccount) | set(personConsume) }
-
-
+		'''
 		# 2) 회사는 산업에 모인 돈을 고용인 수 순서대로, 파레토 비율대로 나눠갖는다.
 		# 2-1) 산업별로 회사, 인원수를 정리한다.
 		industryInfo = dict()
@@ -122,10 +126,13 @@ class Economy:
 			if industryEmployeeCount[company.industry] > 0:
 				profit = self.industryAccount[company.industry]*len(company.employees)/industryEmployeeCount[company.industry]
 				company.earn(profit)
-		'''
 
 		# 3. 회사는 사람을 자르거나 더 고용한다.
-		if self.week % 4 == 0:
+		# 3-1. bankruptNum = 1 이하는 다짤리고 파산한다.
+		bankruptNum = 1
+		bankruptAmount = 0
+		employmentPeriod = 4
+		if self.week % employmentPeriod == 0:
 			for company in self.companies:
 				num = company.hrNum(weeklyWage)
 				if num > 0:
@@ -138,9 +145,10 @@ class Economy:
 						if len(company.employees) > 0:
 							p = company.fire()
 							self.people_unemployed.append(p)
-						if len(company.employees) == 1:
-							p = company.fire()
-							self.people_unemployed.append(p)
+						if len(company.employees) <= bankruptNum or company.profit < bankruptAmount:
+							for _ in range(len(company.employees)):
+								p = company.fire()
+								self.people_unemployed.append(p)
 							self.companies.remove(company)
 							self.companies_bankrupted.append(company)
 							break
@@ -148,7 +156,7 @@ class Economy:
 	# setMinWage
 	def setMinWage(self):
 		raisePeriod = 26
-		if self.duration > self.week and self.week % raisePeriod == 0:
+		if self.duration >= self.week and self.week % raisePeriod == 0:
 			wage = (self.minWageTarget-minWageBegin)/self.duration*self.week+minWageBegin
 			self.minWage = int(wage)
 

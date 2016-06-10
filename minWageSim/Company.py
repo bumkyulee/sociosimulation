@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import random
 from Constants import *
 
 class Company:
@@ -10,9 +9,9 @@ class Company:
 
 	def hrNum(self,wage):
 		if self.profit < 0:
-			return int(self.profit / (baseWage+wage))
+			return int(self.profit / 10 / (baseWage+wage))
 		else:
-			return int(self.profit / (baseWage+wage))
+			return int(self.profit / 15 / (baseWage+wage))
 
 	def hire(self,person):
 		self.employees.append(person)
