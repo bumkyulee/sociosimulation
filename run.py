@@ -37,4 +37,4 @@ def runEconomy(minWageTarget, duration, tickLimit, loop):
 	print e.openingCount[50:]
 	plt.show()
 
-runEconomy(6000,52,300,1)
+runEconomy(8000,52,300,1)

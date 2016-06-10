@@ -54,7 +54,6 @@ class Economy:
 					for j in range(0,employmentCount):
 						p = self.people_unemployed.pop(0)
 						c.hire(p)
-						#c.earn(self.getWeeklyWage()*4)
 					self.companies.append(c)
 
 	# tick 한번
@@ -66,7 +65,6 @@ class Economy:
 
 		# 1. 회사는 임금을 지불한다(행동주체) = 사람은 돈을 번다
 		for company in self.companies:
-			#company.initProfit()
 			company.pay(weeklyWage)
 
 		# 2. 사람은 물건을 산다(행동주체) = 회사는 돈을 번다
@@ -75,12 +73,8 @@ class Economy:
 		for company in self.companies:
 			self.people_employed += company.employees
 
-		# 1-1) 실직자도 최저임금의 반 만큼 쓴다.
-		for person in self.people_unemployed:
-			person.earn(self.getWeeklyWage()/2)
-
 		self.industryAccount = dict.fromkeys(self.industryAccount.iterkeys(),0)
-		for person in self.people_employed+self.people_unemployed:
+		for person in self.people_employed:
 			personConsume = person.buy()
 			self.industryAccount = { k: self.industryAccount.get(k, 0) + personConsume.get(k, 0) for k in set(self.industryAccount) | set(personConsume) }
 		'''
@@ -128,10 +122,9 @@ class Economy:
 				company.earn(profit)
 
 		# 3. 회사는 사람을 자르거나 더 고용한다.
-		# 3-1. bankruptNum = 1 이하는 다짤리고 파산한다.
-		bankruptNum = 1
-		bankruptAmount = 0
-		employmentPeriod = 4
+		# 3-1. bankruptNum 이하는 다짤리고 파산한다.
+		bankruptNum = 0
+		employmentPeriod = 1
 		if self.week % employmentPeriod == 0:
 			for company in self.companies:
 				num = company.hrNum(weeklyWage)
@@ -145,7 +138,7 @@ class Economy:
 						if len(company.employees) > 0:
 							p = company.fire()
 							self.people_unemployed.append(p)
-						if len(company.employees) <= bankruptNum or company.profit < bankruptAmount:
+						if len(company.employees) <= bankruptNum:
 							for _ in range(len(company.employees)):
 								p = company.fire()
 								self.people_unemployed.append(p)
