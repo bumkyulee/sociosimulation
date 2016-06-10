@@ -11,7 +11,7 @@ class Company:
 		if self.profit < 0:
 			return int(self.profit / (baseWage+wage))
 		else:
-			return int(self.profit / (baseWage+wage))
+			return int(self.profit / 5 / (baseWage+wage))
 
 	def hire(self,person):
 		self.employees.append(person)

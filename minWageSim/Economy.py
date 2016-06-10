@@ -77,6 +77,7 @@ class Economy:
 		for person in self.people_employed:
 			personConsume = person.buy()
 			self.industryAccount = { k: self.industryAccount.get(k, 0) + personConsume.get(k, 0) for k in set(self.industryAccount) | set(personConsume) }
+
 		'''
 		# 2) 회사는 산업에 모인 돈을 고용인 수 순서대로, 파레토 비율대로 나눠갖는다.
 		# 2-1) 산업별로 회사, 인원수를 정리한다.
@@ -107,7 +108,7 @@ class Economy:
 				else:
 					profit = paretoProfitBelow*len(company.employees)/paretoEmployeesBelow
 				company.earn(profit)
-		'''
+
 		# 2) 회사는 산업에 모인 돈을 고용인 수 비율로 나눠갖는다.
 		industryEmployeeCount = dict()
 		for company in self.companies:
@@ -120,6 +121,25 @@ class Economy:
 			if industryEmployeeCount[company.industry] > 0:
 				profit = self.industryAccount[company.industry]*len(company.employees)/industryEmployeeCount[company.industry]
 				company.earn(profit)
+		'''
+		# 3) 회사는 산업에 모인 돈을 고용인 수 비율에 랜덤을 더해 나눠갖는다.
+		industryInfo = dict()
+		for company in self.companies:
+			if len(company.employees) > 0:
+				if company.industry not in industryInfo:
+						industryInfo[company.industry] = dict()
+				industryInfo[company.industry][company] = len(company.employees)
+
+		for companies in industryInfo.values():
+			paretoPortion = 0.001
+			paretoMiracle = 0.3
+			paretoValues = sorted(list(np.random.pareto(1,len(companies))),reverse=True if paretoMiracle < random.random() else False)
+			paretoValues = [float(x)/sum(paretoValues) for x in paretoValues]
+			industryEmployeeCount = sum(companies.values())
+			for i,company in enumerate(sorted(companies, key=companies.get, reverse=True)):
+				paretoProfit = self.industryAccount[company.industry]*paretoPortion*paretoValues[i]
+				employeeProfit = self.industryAccount[company.industry]*(1-paretoPortion)*len(company.employees)/industryEmployeeCount
+				company.earn(paretoProfit+employeeProfit)
 
 		# 3. 회사는 사람을 자르거나 더 고용한다.
 		# 3-1. bankruptNum 이하는 다짤리고 파산한다.
