@@ -144,7 +144,7 @@ class Economy:
 		# 3. 회사는 사람을 자르거나 더 고용한다.
 		# 3-1. bankruptNum 이하는 다짤리고 파산한다.
 		bankruptNum = 0
-		employmentPeriod = 1
+		employmentPeriod = 4
 		if self.week % employmentPeriod == 0:
 			for company in self.companies:
 				num = company.hrNum(weeklyWage)
@@ -181,7 +181,7 @@ class Economy:
 	# graph - output 기록 - [필수] Tick 끝에서 실행된다
 	def setOutputMeasures(self):
 		# 0) 최저임금 기록
-		self.minWages.append(self.minWage+baseWage)
+		self.minWages.append(self.minWage)
 		# 1) week 기록
 		self.weeks.append(self.week)
 		# 2) 소비총합 기록

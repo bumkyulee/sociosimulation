@@ -9,9 +9,9 @@ class Company:
 
 	def hrNum(self,wage):
 		if self.profit < 0:
-			return int(self.profit / (baseWage+wage))
+			return int(self.profit / wage)
 		else:
-			return int(self.profit / 5 / (baseWage+wage))
+			return int(self.profit / 26 / wage)
 
 	def hire(self,person):
 		self.employees.append(person)

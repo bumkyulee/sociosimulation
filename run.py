@@ -35,4 +35,4 @@ def runEconomy(minWageTarget, duration, tickLimit, loop):
 	fig.suptitle('Go '+ str(minWageTarget) + 'KRW in ' + str(duration) + 'weeks', fontsize=13, fontweight='bold')
 	plt.show()
 
-runEconomy(8000,52,300,1)
+runEconomy(7000,52,300,1)
